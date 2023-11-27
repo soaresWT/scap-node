@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 const createUser = async (req, res) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role, name, campus } = req.body;
         const requestUser = req.user;
         console.log("o request user:", requestUser.role)
         if (requestUser.role != "admin") {
@@ -16,7 +16,7 @@ const createUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = new User({ email, password: hashedPassword, role });
+        const newUser = new User({ email, password: hashedPassword, role, campus, name });
         emailUtil(email, 'Bem-vindo ao sistema de gerenciamento de bolsas', `Você foi cadastrado no sistema de gerenciamento de bolsas. Sua senha é: ${password}`)
         const savedUser = await newUser.save();
 
@@ -76,4 +76,39 @@ const updateUser = async (req, res) => {
         res.status(500).json({ message: 'Erro ao atualizar usuário' });
     }
 };
-export { createUser, changePassword, updateUser };
+
+const uploadAvatar = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        console.log("userId", userId)
+        const requestingUser = req.user; // Obtém o usuário da autenticação
+        console.log("requestingUser", requestingUser)
+
+        if (requestingUser.userId !== userId && requestingUser.role !== 'admin') {
+            return res.status(403).json({ message: 'Sem permissão para atualizar este usuário' });
+        }
+
+        // Verifique se o arquivo foi enviado
+        if (!req.file) {
+            return res.status(400).json({ message: 'Nenhum arquivo enviado' });
+        }
+
+        const user = await User.findById(userId);
+        console.log("user", user)
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        // Atualize o avatar apenas se for o próprio usuário ou um administrador
+        //user.avatar = req.file.path;
+        user.avatar = req.file.path;
+        await user.save();
+
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao atualizar usuário' });
+    }
+};
+
+
+export { createUser, changePassword, updateUser, uploadAvatar };
