@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 
 const createUser = async (req, res) => {
     try {
+        console.log("req.body", req.body)
         const { email, password, role, name, campus } = req.body;
         const requestUser = req.user;
         console.log("o request user:", requestUser.role)
@@ -110,5 +111,19 @@ const uploadAvatar = async (req, res) => {
     }
 };
 
+const findALlUsers = async (req, res) => {
+    try {
+        const requestingUser = req.user;
+        if (requestingUser.role !== 'admin') {
+            return res.status(403).json({ message: 'Sem permissão para listar usuários' });
+        }
 
-export { createUser, changePassword, updateUser, uploadAvatar };
+        const users = await User.find();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao listar usuários' });
+    }
+};
+
+
+export { createUser, changePassword, updateUser, uploadAvatar, findALlUsers };

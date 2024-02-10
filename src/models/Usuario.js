@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema({
     dataNascimento: {
         type: Date,
     },
+    atividades: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Atividade' }],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
 });
