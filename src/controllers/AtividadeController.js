@@ -78,6 +78,31 @@ const getAtividades = async (req, res) => {
     }
 }
 
+const frequencia = async (req, res) => {
+    try {
+        const requestingUser = req.user;
+        const atividadeId = req.params.id;
+
+        if (requestingUser.role !== 'bolsista') {
+            return res.status(403).json({ message: 'Sem permissão para atualizar atividades' });
+        }
+
+        const atividadeAtualizada = await Atividade.findByIdAndUpdate(
+            atividadeId,
+            req.body,
+            { new: true }
+        );
+
+        if (!atividadeAtualizada) {
+            return res.status(404).json({ message: 'Atividade não encontrada' });
+        }
+
+        res.status(200).json({ atividade: atividadeAtualizada });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao atualizar atividade' });
+    }
+}
+
 
 
 export { createAtividade, updateAtividade, deleteAtividade, getAtividades }
